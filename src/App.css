@@ -1,38 +1,22 @@
-.App {
-  text-align: center;
+.custom-toast {
+  border-radius: 8px !important;
+  color: white !important;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.Toastify__toast--success {
+  background-color: #28a745 !important;
+  color: white !important;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.Toastify__toast--error {
+  background-color: #dc3545 !important;
+  color: white !important;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.Toastify__toast--info {
+  background-color: #333 !important;
+  color: white !important;
 }
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.Toastify__toast-icon {
+  display: none !important;
 }
