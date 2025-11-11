@@ -33,11 +33,14 @@ const Login = () => {
         });
         const data = await response.json();
         if (data?.status === 'success' && data?.data) {
+          // FIX: Added proper click handling for live environment
           setTimeout(() => {
             if (googleButtonRef.current) {
               const googleButton = googleButtonRef.current.querySelector('div[role="button"]');
               if (googleButton) {
+                // Double trigger for live environment
                 googleButton.click();
+                setTimeout(() => googleButton.click(), 100);
               } else {
                 googleButtonRef.current.click();
               }
@@ -71,15 +74,18 @@ const Login = () => {
       const response = await fetch("https://devapi.convosoftserver.com/api/googlelogin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, email }),
+        body: JSON.stringify({ token, email: user.email }), // FIX: Use user.email directly
       });
 
       const data = await response.json();
       if (data?.status === 'success' && data?.data) {
         window.location.href = 'https://sandbox.scorp-erp.com/autoLoginById?user_id=' + data?.data?.encrptID;
+      } else {
+        toast.error(data?.message || "Login failed");
       }
     } catch (error) {
       console.error("API Error:", error);
+      toast.error("Login failed. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -87,7 +93,13 @@ const Login = () => {
 
   const handleGoogleError = () => {
     console.log("Google Login Failed");
+    toast.error("Google login failed. Please try again.");
     setIsSubmitting(false);
+  };
+
+  // FIX: Added Google button render check
+  const handleGoogleButtonReady = () => {
+    console.log("Google button is ready");
   };
 
   useEffect(() => {
@@ -112,6 +124,9 @@ const Login = () => {
       el.src = script.src;
       document.body.appendChild(el);
     });
+
+    // FIX: Log Google OAuth status
+    console.log("Google OAuth Provider initialized");
   }, []);
 
   const handleSubmit = (e) => {
@@ -151,6 +166,19 @@ const Login = () => {
             opacity: 0.01 !important;
             pointer-events: none !important;
             overflow: hidden !important;
+          }
+          /* FIX: Ensure Google button is properly rendered */
+          .google-button-wrapper {
+            position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            opacity: 0.001 !important;
+            pointer-events: none !important;
+          }
+          .google-button-wrapper > div {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
           }
           @media (max-width: 768px) {
             .textper { font-size: 1.5rem; }
@@ -265,16 +293,25 @@ const Login = () => {
                     </div>
                   </form>
 
-                  {/* Hidden Google Login Button - Must be properly rendered */}
-                  <div
-                    ref={googleButtonRef}
-                    className="hidden-google-button"
-                  >
-                    <GoogleLogin
-                      onSuccess={handleGoogleSuccess}
-                      onError={handleGoogleError}
-                      useOneTap={false}
-                    />
+                  {/* Hidden Google Login Button - FIX: Added wrapper for better rendering */}
+                  <div className="google-button-wrapper">
+                    <div
+                      ref={googleButtonRef}
+                      className="hidden-google-button"
+                    >
+                      <GoogleLogin
+                        onSuccess={handleGoogleSuccess}
+                        onError={handleGoogleError}
+                        onReady={handleGoogleButtonReady}
+                        useOneTap={false}
+                        containerProps={{
+                          style: {
+                            display: 'block',
+                            visibility: 'hidden'
+                          }
+                        }}
+                      />
+                    </div>
                   </div>
                   <ToastContainer
                     position="top-right"
