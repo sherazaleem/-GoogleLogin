@@ -12,6 +12,7 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [emailError, setEmailError] = useState('');
+  const [licenseError, setLicenseError] = useState('');
   const googleButtonRef = useRef(null);
 
   // Function to check if email exists and trigger Google login
@@ -24,6 +25,28 @@ const Login = () => {
     setIsSubmitting(true);
 
     try {
+      // First verify license
+      const licenseResponse = await fetch(
+        "https://purchase.sthdemo.com/public/api/verify-license",
+        {
+          method: "POST", // specify POST
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            domain: `${window.location.origin}/`,
+            purchase_code: "yes-L-2050-lar-ptest",
+          }),
+        }
+      )
+      const licenseData = await licenseResponse.json();
+      
+      if (licenseData.success === false) {
+        setLicenseError(licenseData.message || "License is inactive");
+        setIsSubmitting(false);
+        return;
+      }
+
       await new Promise(resolve => setTimeout(resolve, 500));
       if (emailToCheck.includes('@')) {
         const response = await fetch("https://devapi.convosoftserver.com/api/checkemail", {
@@ -106,7 +129,7 @@ const Login = () => {
     // Add Bootstrap & Font Awesome dynamically
     const links = [
       { rel: 'stylesheet', href: 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' },
-      { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css' },
+      { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome@6.4.0/css/all.min.css' },
     ];
     const scripts = [
       { src: 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js' },
@@ -131,6 +154,7 @@ const Login = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setLicenseError(''); // Clear previous license error
     checkEmailAndTriggerGoogle(email);
   };
 
@@ -274,6 +298,11 @@ const Login = () => {
                       </p>
                     )}
 
+                    {licenseError && (
+                      <p style={{ color: 'red', fontSize: '0.9rem', marginTop: '-10px' }}>
+                        {licenseError}
+                      </p>
+                    )}
 
                     <div className="text-center">
                       <button
